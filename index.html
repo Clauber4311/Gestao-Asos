@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de ASO</title>
+    <!-- Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome (Ícones) --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts (Inter) --><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        .tab-button.active {
+            border-color: #38bdf8; /* sky-400 */
+            color: #38bdf8; /* sky-400 */
+            font-weight: 600;
+        }
+        .aso-card {
+            border-left-width: 5px;
+        }
+        .status-vencido { border-color: #ef4444; /* red-500 */ }
+        .status-a_vencer { border-color: #f59e0b; /* amber-500 */ }
+        .status-em_dia { border-color: #22c55e; /* green-500 */ }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header (Novo Layout) --><nav class="bg-gradient-to-r from-sky-600 to-cyan-500 shadow-lg p-4 text-white">
+        <div class="w-full max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-calendar-alt text-3xl mr-3"></i>
+                <h1 class="text-2xl font-bold">Controle de ASO</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-normal">By: Clauber Santos</span>
+                <i class="fas fa-user-circle text-2xl"></i>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 w-full max-w-4xl mx-auto p-8">
+        
+        <!-- Tabs (Abas) --><div class="bg-gray-800 rounded-xl shadow-md p-6 mb-8 border border-gray-700">
+            <div class="flex border-b border-gray-700 mb-6">
+                <button id="tabDatasEventos" class="tab-button py-3 px-6 text-lg text-gray-400 hover:text-sky-400 border-b-2 border-transparent active transition-colors duration-200">
+                    <i class="fas fa-calendar-day mr-2"></i>Datas e Eventos
+                </button>
+                <button id="tabGestaoASO" class="tab-button py-3 px-6 text-lg text-gray-400 hover:text-sky-400 border-b-2 border-transparent transition-colors duration-200">
+                    <i class="fas fa-notes-medical mr-2"></i>Gestão de ASO
+                </button>
+            </div>
+
+            <!-- Conteúdo da Aba: Datas e Eventos --><div id="contentDatasEventos" class="tab-content">
+                <h2 class="text-2xl font-semibold text-white mb-5">Seus Prazos e Compromissos</h2>
+                <form id="formEvento" class="mb-6 space-y-4 bg-gray-700 p-5 rounded-lg border border-gray-600">
+                    <div>
+                        <label for="eventoNome" class="block text-sm font-medium text-gray-300 mb-1">Nome do Evento/Prazo</label>
+                        <input id="eventoNome" type="text" placeholder="Ex: Vencimento FGTS, Aniversário do João" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none bg-gray-800 text-white placeholder-gray-400" required>
+                    </div>
+                    <div>
+                        <label for="eventoData" class="block text-sm font-medium text-gray-300 mb-1">Data</label>
+                        <input id="eventoData" type="date" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none bg-gray-800 text-white" required>
+                    </div>
+                    <button type="submit" class="w-full bg-sky-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-sky-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Adicionar Prazo/Evento
+                    </button>
+                </form>
+                
+                <h3 class="text-xl font-semibold text-gray-200 mb-4">Próximos Itens</h3>
+                <div id="listaEventos" class="space-y-4">
+                    <!-- Eventos carregados pelo Firestore aparecerão aqui -->
+                </div>
+                <p class="text-gray-400 text-center py-4 hidden" id="mensagem-nenhum-evento">Nenhum evento adicionado ainda.</p>
+            </div>
+
+            <!-- Conteúdo da Aba: Gestão de ASO --><div id="contentGestaoASO" class="tab-content hidden">
+                <h2 class="text-2xl font-semibold text-white mb-5">Controle de Atestados de Saúde Ocupacional</h2>
+                <form id="formASO" class="mb-6 space-y-4 bg-gray-700 p-5 rounded-lg border border-gray-600">
+                    <div>
+                        <label for="asoFuncionario" class="block text-sm font-medium text-gray-300 mb-1">Funcionário</label>
+                        <input id="asoFuncionario" type="text" placeholder="Nome do Funcionário" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none bg-gray-800 text-white placeholder-gray-400" required>
+                    </div>
+                    <div>
+                        <label for="asoFuncao" class="block text-sm font-medium text-gray-300 mb-1">Função</label>
+                        <input id="asoFuncao" type="text" placeholder="Função do Funcionário" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none bg-gray-800 text-white placeholder-gray-400" required>
+                    </div>
+                    <div>
+                        <label for="asoEmpresa" class="block text-sm font-medium text-gray-300 mb-1">Empresa</labe
+>
+                        <select id="asoEmpresa" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none bg-gray-800 text-white" required>
+                            <option value="">Selecione a Empresa</option>
+                            <option value="Alpha Locações">Alpha Locações</option>
+                            <option value="LC Locações">LC Locações</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="asoTipo" class="block text-sm font-medium text-gray-300 mb-1">Tipo de ASO</label>
+                        <select id="asoTipo" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none bg-gray-800 text-white" required>
+                            <option value="">Selecione o Tipo</option>
+                            <option value="admissional">Admissional</option>
+                            <option value="periodico">Periódico</option>
+                            <option value="demissional">Demissional</option>
+                            <option value="mudanca_funcao">Mudança de Função</option>
+                            <option value="retorno_trabalho">Retorno ao Trabalho</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="asoDataRealizacao" class="block text-sm font-medium text-gray-300 mb-1">Data de Realização</label>
+                        <input id="asoDataRealizacao" type="date" class="w-full p-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-400 outline-none bg-gray-800 text-white" required>
+                    </div>
+                    <div>
+                        <!-- O campo Próximo Vencimento foi removido. -->
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Adicionar ASO
+                    </button>
+                </form>
+
+                <h3 class="text-xl font-semibold text-gray-200 mb-4">ASOs Registrados</h3>
+                <div class="flex space-x-3 mb-5">
+                    <button data-filter="todos" class="filter-aso-btn bg-gray-700 text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors active">Todos</button>
+                    <button data-filter="vencido" class="filter-aso-btn bg-red-900 text-red-300 py-2 px-4 rounded-lg hover:bg-red-800 transition-colors">Vencidos</button>
+                    <button data-filter="a_vencer" class="filter-aso-btn bg-amber-900 text-amber-300 py-2 px-4 rounded-lg hover:bg-amber-800 transition-colors">A Vencer</button>
+                    <button data-filter="em_dia" class="filter-aso-btn bg-green-900 text-green-300 py-2 px-4 rounded-lg hover:bg-green-800 transition-colors">Em Dia</button>
+                </div>
+
+                <div id="listaASOs" class="space-y-4">
+                    <!-- ASOs carregados pelo Firestore aparecerão aqui -->
+                </div>
+                <p class="text-gray-400 text-center py-4 hidden" id="mensagem-nenhum-aso">Nenhum ASO adicionado ainda.</p>
+            </div>
+        </div>
+
+        <!-- REMOVIDO: <div class="absolute bottom-4 right-4 p-4 rounded-lg bg-gray-700 text-gray-300 text-sm">
+            User ID: <span id="userIdDisplay" class="font-mono text-xs">Carregando...</span>
+        </div> -->
+
+    </main>
+
+    <!-- Modal de Confirmação de Exclusão (Oculto) --><div id="modalExcluir" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-sm text-center border border-gray-700">
+            <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+            <h3 class="text-xl font-semibold text-white mb-2">Confirmar Exclusão</h3>
+            <p class="text-gray-300 mb-6">Tem certeza que deseja excluir este item?</p>
+            <div class="flex justify-center gap-4">
+                <button id="btnCancelarExcluir" class="py-2 px-6 bg-gray-600 text-gray-100 font-semibold rounded-lg hover:bg-gray-500">Cancelar</button>
+                <button id="btnConfirmarExcluir" class="py-2 px-6 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDKs --><script type="module">
+        // Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            addDoc, 
+            setDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            collection, 
+            query,
+            Timestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configuração Firebase ---
+        // As variáveis __app_id, __firebase_config, e __initial_auth_token são injetadas pelo ambiente.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        let firebaseConfig;
+        try {
+            firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        } catch (e) {
+            console.error("Configuração do Firebase inválida.", e);
+            firebaseConfig = {}; // Configuração padrão vazia em caso de erro
+        }
+
+        let app, auth, db;
+        let userId = null;
+        
+        // Coleções do Firestore
+        let eventosCollection;
+        let asoCollection; // Nova coleção para ASO
+
+        // Variável para o filtro de ASO
+        let currentASOFilter = 'todos';
+
+        // Função para inicializar o Firebase e autenticar
+        async function initFirebase() {
+            if (!firebaseConfig.apiKey) {
+                console.error("Configuração do Firebase não carregada. O app não funcionará.");
+                return;
+            }
+
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Listener de autenticação
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        // REMOVIDO: document.getElementById('userIdDisplay').textContent = userId;
+                        
+                        // Configurar referências das coleções
+                        eventosCollection = collection(db, `artifacts/${appId}/public/data/dp_eventos`);
+                        asoCollection = collection(db, `artifacts/${appId}/public/data/dp_asos`); // Inicializa ASO collection
+                        
+                        // Carregar os dados
+                        carregarEventos();
+                        carregarASOs(); // Carregar ASOs
+
+                    } else {
+                        // Se não estiver logado, tentar login
+                        await autenticar();
+                    }
+                });
+
+                // Iniciar autenticação
+                await autenticar();
+
+            } catch (error) {
+                console.error("Erro ao inicializar o Firebase:", error);
+            }
+        }
+        
+        async function autenticar() {
+            try {
+                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Erro na autenticação:", error);
+            }
+        }
+        
+        // --- CRUD Eventos (Gestão de Datas) ---
+        
+        // Carregar/Ouvir Eventos
+        function carregarEventos() {
+            if (!eventosCollection) return;
+            
+            onSnapshot(query(eventosCollection), (snapshot) => {
+                const listaEventos = document.getElementById('listaEventos');
+                listaEventos.innerHTML = ''; // Limpar lista
+                
+                const eventos = [];
+                snapshot.docs.forEach(doc => {
+                    eventos.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Ordenar por data (mais próxima primeiro)
+                eventos.sort((a, b) => a.data.toMillis() - b.data.toMillis());
+                
+                if (eventos.length === 0) {
+                    document.getElementById('mensagem-nenhum-evento').classList.remove('hidden');
+                } else {
+                    document.getElementById('mensagem-nenhum-evento').classList.add('hidden');
+                    eventos.forEach(evento => {
+                        renderizarEvento(evento.id, evento);
+                    });
+                }
+            });
+        }
+        
+        // Renderizar Evento
+        function renderizarEvento(id, data) {
+            const listaEventos = document.getElementById('listaEventos');
+            const eventoItem = document.createElement('div');
+            eventoItem.className = 'flex items-center justify-between p-4 bg-gray-700 rounded-lg border border-gray-600';
+            
+            const dataObj = data.data.toDate();
+            // Formatação de data (DD/MM/YYYY)
+            const dia = String(dataObj.getUTCDate()).padStart(2, '0');
+            const mes = String(dataObj.getUTCMonth() + 1).padStart(2, '0');
+            const ano = dataObj.getUTCFullYear();
+            const dataFormatada = `${dia}/${mes}/${ano}`;
+
+            eventoItem.innerHTML = `
+                <div>
+                    <p class="font-semibold text-white">${data.nome}</p>
+                    <p class="text-sm text-sky-400 font-medium">
+                        <i class="fas fa-calendar-check mr-1"></i> ${dataFormatada}
+                    </p>
+                </div>
+                <button class="btn-excluir-evento text-gray-500 hover:text-red-400" data-id="${id}">
+                    <i class="fas fa-trash-alt fa-sm"></i>
+                </button>
+            `;
+            
+            eventoItem.querySelector('.btn-excluir-evento').addEventListener('click', () => {
+                abrirModalExcluir(id, eventosCollection);
+            });
+            
+            listaEventos.appendChild(eventoItem);
+        }
+
+        // --- CRUD ASOs (Gestão de ASO) ---
+
+        // Carregar/Ouvir ASOs
+        function carregarASOs() {
+            if (!asoCollection) return;
+
+            onSnapshot(query(asoCollection), (snapshot) => {
+                const listaASOs = document.getElementById('listaASOs');
+                listaASOs.innerHTML = ''; // Limpar lista
+
+                const asos = [];
+                snapshot.docs.forEach(doc => {
+                    asos.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Ordenar por data de vencimento (mais próxima primeiro)
+                asos.sort((a, b) => a.proximoVencimento.toMillis() - b.proximoVencimento.toMillis());
+                
+                const asosFiltrados = asos.filter(aso => {
+                    const status = getStatusASO(aso.proximoVencimento.toDate());
+                    return currentASOFilter === 'todos' || status === currentASOFilter;
+                });
+
+                if (asosFiltrados.length === 0) {
+                    document.getElementById('mensagem-nenhum-aso').classList.remove('hidden');
+                } else {
+                    document.getElementById('mensagem-nenhum-aso').classList.add('hidden');
+                    asosFiltrados.forEach(aso => {
+                        renderizarASO(aso.id, aso);
+                    });
+                }
+            });
+        }
+
+        // Renderizar Card ASO
+        function renderizarASO(id, data) {
+            const listaASOs = document.getElementById('listaASOs');
+            const asoCard = document.createElement('div');
+            
+            const dataRealizacaoObj = data.dataRealizacao.toDate();
+            const proximoVencimentoObj = data.proximoVencimento.toDate();
+
+            const status = getStatusASO(proximoVencimentoObj);
+            let statusClass = '';
+            let statusText = '';
+            let statusIcon = '';
+
+            if (status === 'vencido') {
+                statusClass = 'status-vencido';
+                statusText = 'Vencido';
+                statusIcon = 'fa-exclamation-circle text-red-400';
+            } else if (status === 'a_vencer') {
+                statusClass = 'status-a_vencer';
+                statusText = 'A Vencer';
+                statusIcon = 'fa-clock text-amber-400';
+            } else {
+                statusClass = 'status-em_dia';
+                statusText = 'Em Dia';
+                statusIcon = 'fa-check-circle text-green-400';
+            }
+
+            asoCard.className = `aso-card bg-gray-800 p-4 rounded-lg shadow flex items-center justify-between ${statusClass}`;
+            asoCard.innerHTML = `
+                <div>
+                    <h4 class="font-semibold text-white">${data.funcionario}</h4>
+                    <p class="text-sm text-gray-200 font-medium">${data.funcao || 'Função N/A'}</p>
+                    <p class="text-sm text-gray-400">${data.empresa || 'Empresa N/A'}</p>
+                    <p class="text-sm text-gray-400 capitalize mt-1">${data.tipoASO.replace('_', ' ')}</p>
+                    <p class="text-xs text-gray-500 mt-2">Realização: ${formatDate(dataRealizacaoObj)}</p>
+                    <p class="text-sm text-gray-200 font-medium mt-1">Vencimento: ${formatDate(proximoVencimentoObj)}</p>
+                </div>
+                <div class="text-right">
+                    <span class="inline-flex items-center text-sm font-semibold mr-2">
+                        <i class="fas ${statusIcon} mr-1"></i> ${statusText}
+                    </span>
+                    <button class="btn-excluir-aso text-gray-500 hover:text-red-400 ml-2" data-id="${id}">
+                        <i class="fas fa-trash-alt fa-sm"></i>
+                    </button>
+                </div>
+            `;
+            
+            asoCard.querySelector('.btn-excluir-aso').addEventListener('click', () => {
+                abrirModalExcluir(id, asoCollection);
+            });
+
+            listaASOs.appendChild(asoCard);
+        }
+
+        // Função para determinar o status do ASO
+        function getStatusASO(vencimentoDate) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0); // Zera hora para comparação de data
+
+            const vencimento = new Date(vencimentoDate.getFullYear(), vencimentoDate.getMonth(), vencimentoDate.getDate());
+            
+            const diffTime = vencimento.getTime() - hoje.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                return 'vencido';
+            } else if (diffDays <= 30) { // Considera "A Vencer" se faltar 30 dias ou menos
+                return 'a_vencer';
+            } else {
+                return 'em_dia';
+            }
+        }
+
+        // Função utilitária para formatar datas
+        function formatDate(date) {
+            const dia = String(date.getUTCDate()).padStart(2, '0');
+            const mes = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const ano = date.getUTCFullYear();
+            return `${dia}/${mes}/${ano}`;
+        }
+
+
+        // --- Modal de Exclusão Genérico ---
+        let itemParaExcluirId = null;
+        let colecaoDoItem = null;
+        
+        function abrirModalExcluir(id, collectionRef) {
+            itemParaExcluirId = id;
+            colecaoDoItem = collectionRef;
+            document.getElementById('modalExcluir').classList.remove('hidden');
+        }
+        
+        function fecharModalExcluir() {
+            itemParaExcluirId = null;
+            colecaoDoItem = null;
+            document.getElementById('modalExcluir').classList.add('hidden');
+        }
+        
+ 
+        // --- Inicialização ---
+       document.addEventListener('DOMContentLoaded', () => {
+           // Inicia o Firebase
+           initFirebase();
+
+           // --- Configura os Listeners da UI ---
+           
+           // Abas (Tabs)
+           const tabDatasEventos = document.getElementById('tabDatasEventos');
+           const tabGestaoASO = document.getElementById('tabGestaoASO');
+           const contentDatasEventos = document.getElementById('contentDatasEventos');
+           const contentGestaoASO = document.getElementById('contentGestaoASO');
+
+           tabDatasEventos.addEventListener('click', () => {
+               tabDatasEventos.classList.add('active');
+               tabGestaoASO.classList.remove('active');
+               contentDatasEventos.classList.remove('hidden');
+               contentGestaoASO.classList.add('hidden');
+           });
+
+           tabGestaoASO.addEventListener('click', () => {
+               tabGestaoASO.classList.add('active');
+               tabDatasEventos.classList.remove('active');
+               contentGestaoASO.classList.remove('hidden');
+               contentDatasEventos.classList.add('hidden');
+           });
+
+           // CRUD Eventos (Gestão de Datas)
+           const formEvento = document.getElementById('formEvento');
+
+           formEvento.addEventListener('submit', async (e) => {
+               e.preventDefault();
+               if (!db || !userId) {
+                   console.error("DB ou Usuário não inicializado.");
+                   return;
+               }
+
+               const nome = document.getElementById('eventoNome').value;
+               const dataISO = document.getElementById('eventoData').value; // Formato YYYY-MM-DD
+               
+               // Correção de fuso horário: Trata a data como UTC para evitar problemas
+               const [ano, mes, dia] = dataISO.split('-').map(Number);
+               const dataUTC = new Date(Date.UTC(ano, mes - 1, dia, 12, 0, 0)); // Meio-dia UTC
+
+               try {
+                   await addDoc(eventosCollection, {
+                       nome: nome,
+                       data: Timestamp.fromDate(dataUTC),
+                       criadoPor: userId
+                   });
+                   formEvento.reset();
+               } catch (error) {
+                   console.error("Erro ao adicionar evento: ", error);
+               }
+           });
+           
+           // CRUD ASO (Gestão de ASO)
+           const formASO = document.getElementById('formASO');
+
+           formASO.addEventListener('submit', async (e) => {
+               e.preventDefault();
+               if (!db || !userId) {
+                   console.error("DB ou Usuário não inicializado.");
+                   return;
+               }
+
+               const funcionario = document.getElementById('asoFuncionario').value;
+               const funcao = document.getElementById('asoFuncao').value;
+               const empresa = document.getElementById('asoEmpresa').value;
+               const tipoASO = document.getElementById('asoTipo').value;
+               const dataRealizacaoISO = document.getElementById('asoDataRealizacao').value;
+               // O campo 'proximoVencimentoISO' foi removido, será calculado.
+
+               const [anoR, mesR, diaR] = dataRealizacaoISO.split('-').map(Number);
+               const dataRealizacaoUTC = new Date(Date.UTC(anoR, mesR - 1, diaR, 12, 0, 0));
+
+               // Calcular o próximo vencimento (1 ano após a realização)
+               const anoV = anoR + 1;
+               const mesV = mesR;
+               const diaV = diaR;
+               const proximoVencimentoUTC = new Date(Date.UTC(anoV, mesV - 1, diaV, 12, 0, 0));
+
+               try {
+                   await addDoc(asoCollection, {
+                       funcionario: funcionario,
+                       funcao: funcao,
+                       empresa: empresa,
+                       tipoASO: tipoASO,
+                       dataRealizacao: Timestamp.fromDate(dataRealizacaoUTC),
+                       proximoVencimento: Timestamp.fromDate(proximoVencimentoUTC),
+                       criadoEm: Timestamp.now(),
+                       criadoPor: userId
+                   });
+                   formASO.reset();
+               } catch (error) {
+                   console.error("Erro ao adicionar ASO: ", error);
+               }
+           });
+
+           // Filtros de ASO
+           const filterASOBtns = document.querySelectorAll('.filter-aso-btn');
+           filterASOBtns.forEach(btn => {
+               btn.addEventListener('click', (e) => {
+                   filterASOBtns.forEach(b => b.classList.remove('active', 'bg-sky-600', 'text-white'));
+                   e.currentTarget.classList.add('active', 'bg-sky-600', 'text-white');
+                   currentASOFilter = e.currentTarget.dataset.filter;
+                   carregarASOs(); // Recarrega os ASOs com o novo filtro
+               });
+           });
+           // Define o estado inicial do botão 'Todos' para 'active'
+           document.querySelector('.filter-aso-btn[data-filter="todos"]').classList.add('active', 'bg-sky-600', 'text-white');
+
+           
+           // Modal de Exclusão Genérico
+           const modalExcluir = document.getElementById('modalExcluir');
+           const btnCancelarExcluir = document.getElementById('btnCancelarExcluir');
+           const btnConfirmarExcluir = document.getElementById('btnConfirmarExcluir');
+           
+           btnCancelarExcluir.addEventListener('click', fecharModalExcluir);
+           modalExcluir.addEventListener('click', (e) => {
+               if (e.target === modalExcluir) {
+                   fecharModalExcluir();
+               }
+           });
+
+           btnConfirmarExcluir.addEventListener('click', async () => {
+               if (itemParaExcluirId && colecaoDoItem) {
+                   try {
+                       const docRef = doc(db, colecaoDoItem.path, itemParaExcluirId);
+                       await deleteDoc(docRef);
+                       fecharModalExcluir();
+                   } catch (error) {
+                       console.error("Erro ao excluir item:", error);
+                       fecharModalExcluir(); // Fecha mesmo se der erro
+                   }
+               }
+           });
+
+       }); // Fim do DOMContentLoaded
+ 
+    </script>
+ </body>
+</html>
